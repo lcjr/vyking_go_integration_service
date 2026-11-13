@@ -1,0 +1,142 @@
+{
+  "info": {
+    "name": "Vyking Integration Service Test Suite",
+    "description": "Comprehensive test suite for the Go-based Helpwise integration and partner transaction API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication & Security Tests",
+      "item": [
+        {
+          "name": "Missing Authorization Header",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transactions?email=jane@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "transactions"],
+              "query": [
+                { "key": "email", "value": "jane@example.com" }
+              ]
+            },
+            "description": "Tests unauthorized response when Bearer token header is completely missing."
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Partner Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer invalid-token-xyz" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transactions?email=jane@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "transactions"],
+              "query": [
+                { "key": "email", "value": "jane@example.com" }
+              ]
+            },
+            "description": "Tests forbidden response when an unrecognized token is provided."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Request Parameter Validation",
+      "item": [
+        {
+          "name": "Missing Email Parameter",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer brand1-partner-token" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "transactions"]
+            },
+            "description": "Tests validation failure when the required 'email' query parameter is omitted."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Business Logic & Transaction Filtering",
+      "item": [
+        {
+          "name": "Get Recent Transactions (Brand 1 - Jane Doe)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer brand1-partner-token" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transactions?email=jane@example.com&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "transactions"],
+              "query": [
+                { "key": "email", "value": "jane@example.com" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Happy path: Retrieves recent transactions with mapped Helpwise statuses and formatted minor units."
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Transactions by Status ('completed')",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer brand1-partner-token" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transactions?email=jane@example.com&status=completed",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "transactions"],
+              "query": [
+                { "key": "email", "value": "jane@example.com" },
+                { "key": "status", "value": "completed" }
+              ]
+            },
+            "description": "Tests filtering results specifically for completed/booked transaction statuses."
+          },
+          "response": []
+        },
+        {
+          "name": "Customer Not Found Case",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer brand1-partner-token" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/transactions?email=nonexistent@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "transactions"],
+              "query": [
+                { "key": "email", "value": "nonexistent@example.com" }
+              ]
+            },
+            "description": "Tests error output when a customer email does not exist under the specified brand."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
